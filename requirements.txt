@@ -1,0 +1,10 @@
+fastapi
+pymongo
+pydantic_settings
+uvicorn
+google
+google-genai
+python-dotenv
+streamlit
+pandas
+streamlit-agraph

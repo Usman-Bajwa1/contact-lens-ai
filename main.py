@@ -3,27 +3,26 @@ import asyncio
 from app.services.google_llm import Googlellm
 from app.services.manager import ContactManager
 from app.schema.app_schemas import ContactCreate, DuplicateCheckResult
-# NEW: Import Graph libraries
 from streamlit_agraph import agraph, Node, Edge, Config
 
-# --- CONFIGURATION ---
+
 st.set_page_config(page_title="ContactLens AI", page_icon="📇", layout="wide")
 
-# --- INITIALIZATION ---
+
 ContactManager.init_state()
 if "current_extraction" not in st.session_state:
     st.session_state.current_extraction = None
 if "last_uploaded_file" not in st.session_state:
     st.session_state.last_uploaded_file = None
 
-# --- SIDEBAR ---
+
 with st.sidebar:
     st.title("📇 ContactLens AI")
     st.caption("Powered by Gemini 2.5 Pro")
     st.markdown("---")
     
     st.write("### ⚙️ Settings")
-    mask_pii = st.toggle("🔒 Privacy Mode (Mask PII)", value=False)
+    mask_pii = st.toggle("🔒 Privacy Mode", value=False)
     
     st.write("### 🧠 AI Features")
     st.markdown("""
@@ -33,13 +32,12 @@ with st.sidebar:
     - **Network Graph**: Visualizes connections
     """)
 
-# --- MAIN APP LOGIC ---
+
 tab_upload, tab_list, tab_graph = st.tabs(["📤 Upload & Extract", "📋 Contact List", "🕸️ Network Graph"])
 
 with tab_upload:
     col1, col2 = st.columns([1, 1])
 
-    # --- LEFT COLUMN: INPUT ---
     with col1:
         st.subheader("1. Upload Image")
         
@@ -71,7 +69,6 @@ with tab_upload:
                     except Exception as e:
                         st.error(f"Extraction Error: {e}")
 
-    # --- RIGHT COLUMN: RESULTS ---
     with col2:
         st.subheader("2. Review & Save")
         
@@ -191,7 +188,6 @@ with tab_list:
     else:
         st.info("No contacts yet. Upload a card to get started!")
 
-# --- NEW: GRAPH TAB ---
 with tab_graph:
     st.subheader("🕸️ Network Connections")
     st.caption("Visualizing relationships by Company and Industry")
@@ -203,41 +199,36 @@ with tab_graph:
         edges = []
         companies = set()
         
-        # 1. Create Nodes and Edges
         for contact in contacts:
             c_id = contact.get('id')
             c_name = contact.get('full_name', 'Unknown')
             c_comp = contact.get('company')
-            c_img = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" # User Icon
+            c_img = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
 
-            # Add Person Node
             nodes.append(Node(
                 id=c_id, 
                 label=c_name, 
                 size=25, 
                 shape="circularImage",
                 image=c_img,
-                title=f"{contact.get('job_title')} @ {c_comp}" # Tooltip
+                title=f"{contact.get('job_title')} @ {c_comp}" 
             ))
             
-            # Add Company Node & Edge
             if c_comp:
                 clean_comp = c_comp.strip()
                 companies.add(clean_comp)
                 edges.append(Edge(source=c_id, target=clean_comp, color="#dfe4ea"))
         
-        # Add Unique Company Nodes
         for comp in companies:
             nodes.append(Node(
                 id=comp, 
                 label=comp, 
                 size=35, 
                 shape="circularImage",
-                image="https://cdn-icons-png.flaticon.com/512/4400/4400465.png", # Company Icon
+                image="https://cdn-icons-png.flaticon.com/512/4400/4400465.png", 
                 color="#f1f2f6"
             ))
 
-        # 2. Graph Configuration
         config = Config(
             width="100%",
             height=600,
@@ -249,7 +240,6 @@ with tab_graph:
             collapsible=False
         )
 
-        # 3. Render
         return_value = agraph(nodes=nodes, edges=edges, config=config)
     
     else:
